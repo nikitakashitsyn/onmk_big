@@ -54,12 +54,61 @@ class UserController extends Controller
      * Display the specified resource.
      *
      * @param int $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\View\View
      */
     public function show($id)
     {
         $user = User::with(['patients', 'exams.pack'])->findOrFail($id);
-        return view('users.show', compact('user'));
+
+        $viewer = Auth::user();
+        $isAttendingDoctor = $viewer !== null && $viewer->hasRole(User::ROLE_DOC);
+        $isAdmin = $viewer !== null && $viewer->hasRole(User::ROLE_ADMIN);
+        $canViewCaregiver = $isAttendingDoctor || $isAdmin;
+
+        $caregiver = [
+            'name' => null,
+            'relation' => null,
+            'phone' => null,
+            'email' => null,
+            'phone_href' => null,
+        ];
+        $hasCaregiver = false;
+
+        if ($canViewCaregiver) {
+            $caregiver = $user->getCaregiver();
+            $caregiver['phone_href'] = $this->formatPhoneHref($caregiver['phone']);
+            $hasCaregiver = $user->hasCaregiver();
+        }
+
+        return view('users.show', compact(
+            'user',
+            'caregiver',
+            'hasCaregiver',
+            'isAttendingDoctor',
+            'canViewCaregiver'
+        ));
+    }
+
+    /**
+     * Подготовить очищенный номер телефона для tel:-ссылки.
+     */
+    private function formatPhoneHref(?string $phone): ?string
+    {
+        if ($phone === null) {
+            return null;
+        }
+
+        $stripped = preg_replace('/[^\d+]/', '', $phone);
+        if ($stripped === null || $stripped === '') {
+            return null;
+        }
+
+        $normalized = preg_replace('/(?!^)\+/', '', $stripped);
+        if ($normalized === null || !preg_match('/\d/', $normalized)) {
+            return null;
+        }
+
+        return $normalized;
     }
 
     /**

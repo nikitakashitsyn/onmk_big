@@ -79,48 +79,51 @@
                 </div>
             </div>
 
-            @php $caregiver = $user->getCaregiver(); @endphp
-            <div class="card card-info card-outline">
-                <div class="card-header">
-                    <h3 class="card-title">Ухаживающее лицо / контактное лицо</h3>
+            @if($canViewCaregiver ?? false)
+                <div class="card card-info card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title">Контакты опекуна / ухаживающего лица</h3>
+                    </div>
+                    <div class="card-body">
+                        @if($hasCaregiver ?? false)
+                            <ul class="list-group list-group-unbordered mb-0">
+                                <li class="list-group-item d-flex justify-content-between align-items-baseline flex-wrap">
+                                    <b class="mr-2">ФИО</b>
+                                    <span class="text-right text-break">{{ $caregiver['name'] ?? '—' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-baseline flex-wrap">
+                                    <b class="mr-2">Степень родства</b>
+                                    <span class="text-right text-break">{{ $caregiver['relation'] ?? '—' }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-baseline flex-wrap">
+                                    <b class="mr-2">Телефон</b>
+                                    <span class="text-right text-break">
+                                        @if(!empty($caregiver['phone']) && !empty($caregiver['phone_href']))
+                                            <a href="tel:{{ $caregiver['phone_href'] }}">{{ $caregiver['phone'] }}</a>
+                                        @elseif(!empty($caregiver['phone']))
+                                            {{ $caregiver['phone'] }}
+                                        @else
+                                            —
+                                        @endif
+                                    </span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-baseline flex-wrap">
+                                    <b class="mr-2">Email</b>
+                                    <span class="text-right text-break">
+                                        @if(!empty($caregiver['email']))
+                                            <a href="mailto:{{ $caregiver['email'] }}">{{ $caregiver['email'] }}</a>
+                                        @else
+                                            —
+                                        @endif
+                                    </span>
+                                </li>
+                            </ul>
+                        @else
+                            <p class="text-muted mb-0">Контакты опекуна не указаны</p>
+                        @endif
+                    </div>
                 </div>
-                <div class="card-body">
-                    @if($user->hasCaregiver())
-                        <ul class="list-group list-group-unbordered mb-0">
-                            <li class="list-group-item">
-                                <b>ФИО</b>
-                                <span class="float-right">{{ $caregiver['name'] ?? '—' }}</span>
-                            </li>
-                            <li class="list-group-item">
-                                <b>Степень родства</b>
-                                <span class="float-right">{{ $caregiver['relation'] ?? '—' }}</span>
-                            </li>
-                            <li class="list-group-item">
-                                <b>Телефон</b>
-                                <span class="float-right">
-                                    @if(!empty($caregiver['phone']))
-                                        <a href="tel:{{ preg_replace('/[^\d+]/', '', $caregiver['phone']) }}">{{ $caregiver['phone'] }}</a>
-                                    @else
-                                        —
-                                    @endif
-                                </span>
-                            </li>
-                            <li class="list-group-item">
-                                <b>Email</b>
-                                <span class="float-right">
-                                    @if(!empty($caregiver['email']))
-                                        <a href="mailto:{{ $caregiver['email'] }}">{{ $caregiver['email'] }}</a>
-                                    @else
-                                        —
-                                    @endif
-                                </span>
-                            </li>
-                        </ul>
-                    @else
-                        <p class="text-muted mb-0">Не указано</p>
-                    @endif
-                </div>
-            </div>
+            @endif
         </div>
 
         {{-- Когнитивные сферы + история экзаменов --}}
