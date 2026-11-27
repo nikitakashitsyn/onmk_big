@@ -153,9 +153,39 @@ class User extends Authenticatable
     {
         return [
             'caregiver' => ['nullable', 'array'],
-            'caregiver.name' => ['nullable', 'string', 'max:255'],
+            'caregiver.name' => [
+                'nullable',
+                'required_with:caregiver.relation,caregiver.phone,caregiver.email',
+                'string',
+                'max:255',
+            ],
             'caregiver.relation' => ['nullable', 'string', 'max:100'],
-            'caregiver.phone' => ['nullable', 'string', 'max:50', 'regex:/^[0-9+\-\s()]+$/'],
+            'caregiver.phone' => [
+                'nullable',
+                'string',
+                'max:50',
+                function (string $attribute, $value, \Closure $fail): void {
+                    if ($value === null) {
+                        return;
+                    }
+
+                    $trimmed = trim((string) $value);
+                    if ($trimmed === '') {
+                        return;
+                    }
+
+                    if (!preg_match('/^[0-9+\-\s()]+$/', $trimmed)) {
+                        $fail('Телефон ухаживающего лица может содержать только цифры, пробелы и символы +, -, (, ).');
+                        return;
+                    }
+
+                    $digits = preg_replace('/\D/', '', $trimmed);
+                    $digitCount = strlen($digits);
+                    if ($digitCount < 7 || $digitCount > 15) {
+                        $fail('Телефон ухаживающего лица должен содержать от 7 до 15 цифр.');
+                    }
+                },
+            ],
             'caregiver.email' => ['nullable', 'email:rfc', 'max:255'],
         ];
     }
@@ -163,10 +193,11 @@ class User extends Authenticatable
     public static function caregiverValidationMessages(): array
     {
         return [
+            'caregiver.array' => 'Некорректный формат данных ухаживающего лица.',
+            'caregiver.name.required_with' => 'Укажите ФИО ухаживающего лица, если заполнены его контакты или степень родства.',
             'caregiver.name.max' => 'ФИО ухаживающего лица не должно превышать :max символов.',
             'caregiver.relation.max' => 'Степень родства не должна превышать :max символов.',
-            'caregiver.phone.max' => 'Телефон не должен превышать :max символов.',
-            'caregiver.phone.regex' => 'Телефон может содержать только цифры, пробелы и символы +, -, (, ).',
+            'caregiver.phone.max' => 'Телефон ухаживающего лица не должен превышать :max символов.',
             'caregiver.email.email' => 'Укажите корректный email ухаживающего лица.',
             'caregiver.email.max' => 'Email ухаживающего лица не должен превышать :max символов.',
         ];

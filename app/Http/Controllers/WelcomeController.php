@@ -55,14 +55,35 @@ class WelcomeController extends Controller
             return $redirect;
         }
 
+        // Normalize whitespace-only caregiver fields to null even if invoked outside HTTP middleware.
+        $rawCaregiver = $request->input('caregiver');
+        if (is_array($rawCaregiver)) {
+            $normalizedCaregiver = [];
+            foreach ($rawCaregiver as $key => $val) {
+                if (is_string($val)) {
+                    $trimmed = trim($val);
+                    $normalizedCaregiver[$key] = $trimmed === '' ? null : $trimmed;
+                } else {
+                    $normalizedCaregiver[$key] = $val;
+                }
+            }
+            $request->merge(['caregiver' => $normalizedCaregiver]);
+        }
+
         $validated = $request->validate(
-            User::caregiverValidationRules(),
-            User::caregiverValidationMessages()
+            array_merge(
+                ['profile' => ['nullable', 'array']],
+                User::caregiverValidationRules()
+            ),
+            array_merge(
+                ['profile.array' => 'Некорректный формат данных анкеты.'],
+                User::caregiverValidationMessages()
+            )
         );
 
         if ($user = Auth::user()) {
             $jsonData = is_array($user->jsonData) ? $user->jsonData : [];
-            $jsonData['initial_data'] = $request->post('profile', []);
+            $jsonData['initial_data'] = $validated['profile'] ?? [];
             $user->jsonData = $jsonData;
             $user->setCaregiver($validated['caregiver'] ?? []);
             $user->save();
@@ -110,7 +131,9 @@ class WelcomeController extends Controller
 //
 
         $user = Auth::user();
-        $user->jsonData = array_merge($user->jsonData ?? [], ['results' => $result]);
+        $jsonData = is_array($user->jsonData) ? $user->jsonData : [];
+        $jsonData['results'] = $result;
+        $user->jsonData = $jsonData;
         $user->save();
 
 
