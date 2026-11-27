@@ -46,6 +46,7 @@ class User extends Authenticatable
 
     public const ROLE_ADMIN = 'ROLE_ADMIN';
     public const ROLE_DOC = 'ROLE_DOCTOR';
+    public const ROLE_USER = 'ROLE_USER';
 
     /**
      * The attributes that are mass assignable.
@@ -57,7 +58,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'roles'
+        'roles',
+        'jsonData',
     ];
 
     /**
@@ -109,7 +111,7 @@ class User extends Authenticatable
     {
         static::creating(function ($user) {
             if (empty($user->roles)) {
-                $user->roles = ['ROLE_USER'];
+                $user->roles = [self::ROLE_USER];
             }
         });
 
