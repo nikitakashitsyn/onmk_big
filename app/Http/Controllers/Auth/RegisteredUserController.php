@@ -29,6 +29,14 @@ class RegisteredUserController extends Controller
     /* ------------------------------------------------------------------ */
 
     /**
+     * Выбор роли перед регистрацией.
+     */
+    public function choose()
+    {
+        return view('auth.register_choose');
+    }
+
+    /**
      * Форма регистрации пациента.
      */
     public function create()
@@ -89,7 +97,9 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        return redirect()->route('welcome');
+        return $isDoctor
+            ? redirect()->route('patients_list')
+            : redirect()->route('welcome');
     }
 
     /* ------------------------------------------------------------------ */

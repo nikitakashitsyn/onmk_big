@@ -44,7 +44,7 @@
                             <a href="{{route('auth.login')}}" class="nav-link">Войти</a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{route('auth.register')}}" class="nav-link">Зарегистрироваться</a>
+                            <a href="{{route('register')}}" class="nav-link">Зарегистрироваться</a>
                         </li>
                     </ul>
                 </div>

@@ -15,14 +15,40 @@ use Illuminate\Support\Facades\Session;
 
 class WelcomeController extends Controller
 {
+    private function redirectIfNotPatient()
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return null;
+        }
+
+        if ($user->hasRole(User::ROLE_ADMIN)) {
+            return redirect()->route('admin');
+        }
+
+        if ($user->hasRole(User::ROLE_DOC)) {
+            return redirect()->route('patients_list');
+        }
+
+        return null;
+    }
+
     public function first()
     {
+        if ($redirect = $this->redirectIfNotPatient()) {
+            return $redirect;
+        }
+
         $data = Auth::user()->jsonData['initial_data'] ?? [];
         return view('welcome.form')->with(['data' => $data]);
     }
 
     public function store_first(Request $request)
     {
+        if ($redirect = $this->redirectIfNotPatient()) {
+            return $redirect;
+        }
+
         if ($user = Auth::user()) {
             $user->jsonData = array_merge($user->jsonData ?? [], ['initial_data' => $request->post('profile')]);
             $user->save();
@@ -32,6 +58,10 @@ class WelcomeController extends Controller
 
     public function second()
     {
+        if ($redirect = $this->redirectIfNotPatient()) {
+            return $redirect;
+        }
+
         $user = Auth::user();
         return view('welcome.new_second_form', ['data' => IntroTest::getData(), 'model' => $user]);
         //return view('welcome.second_form');
@@ -39,6 +69,10 @@ class WelcomeController extends Controller
 
     public function store_second(Request $request)
     {
+        if ($redirect = $this->redirectIfNotPatient()) {
+            return $redirect;
+        }
+
         $result = [];
         foreach (IntroTest::getData() as $key => $block) {
             $arr = $request->post('assign');

@@ -63,6 +63,7 @@ Route::post('/logout', function (Request $request) {
 })->name('logout');
 
 Route::post('/login', [LoginController::class, 'authenticate'])->middleware('guest')->name('auth.login');
+Route::get('/register', [RegisteredUserController::class, 'choose'])->middleware('guest')->name('register');
 Route::get('/register/user', [RegisteredUserController::class, 'create'])->middleware('guest')->name('auth.register');
 Route::get('/register/doc', [RegisteredUserController::class, 'createDoc'])->middleware('guest')->name('auth.register_doc');
 
