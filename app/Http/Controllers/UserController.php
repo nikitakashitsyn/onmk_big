@@ -178,17 +178,39 @@ class UserController extends Controller
 
     public function patientsStore(Request $request)
     {
-        if ($user = User::where('login', '=', $request->post('ident'))->first()) {
-            if (!UserDoctor::where('user_id', '=', $user->id)->where('doctor_id', '=', Auth::id())->first()) {
-                UserDoctor::create([
-                    'user_id' => $user->id,
-                    'doctor_id' => Auth::id(),
-                    'comment' => $request->post('comment')
-                ]);
-            }
+        $value = trim((string) $request->post('ident', ''));
+
+        // Определяем тип ввода и ищем пациента
+        if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            $user = User::whereRaw('LOWER(email) = ?', [mb_strtolower($value)])->first();
+        } elseif (preg_match('/^\d{6}$/', $value)) {
+            $user = User::where('login', '=', $value)->first();
         } else {
-            Session::flash('danger', 'Пользователь с таким идентификатором не найден.');
+            Session::flash('danger', 'Введите корректный email или 6-значный логин пациента.');
+            return redirect()->back()->withInput();
         }
+
+        if (!$user) {
+            Session::flash('danger', 'Пользователь с таким идентификатором не найден.');
+            return redirect()->back()->withInput();
+        }
+
+        if ($user->id === Auth::id()) {
+            Session::flash('danger', 'Вы не можете добавить самого себя в качестве пациента.');
+            return redirect()->back()->withInput();
+        }
+
+        if (UserDoctor::where('user_id', '=', $user->id)->where('doctor_id', '=', Auth::id())->first()) {
+            Session::flash('danger', 'Этот пациент уже привязан к вам.');
+            return redirect()->back()->withInput();
+        }
+
+        UserDoctor::create([
+            'user_id' => $user->id,
+            'doctor_id' => Auth::id(),
+            'comment' => $request->post('comment')
+        ]);
+
         return redirect()->route('patients_list');
     }
 
