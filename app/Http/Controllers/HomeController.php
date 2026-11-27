@@ -9,6 +9,7 @@ use App\Models\TestGroup;
 use App\Models\TestPack;
 use App\Models\UserTest;
 use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
@@ -28,8 +29,20 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index()
+    public function index(Request $request)
     {
+        $user = Auth::user();
+
+        if ($user && $request->query('view') !== 'user') {
+            if ($user->hasRole(User::ROLE_ADMIN)) {
+                return redirect()->route('admin');
+            }
+
+            if ($user->hasRole(User::ROLE_DOC)) {
+                return redirect()->route('patients_list');
+            }
+        }
+
         UserTest::reassign();
         $testpacks = UserTest::whereUserId(Auth::id())->get();
         $exams = Exam::where('status', 'created')->where('user_id', Auth::id())->get();

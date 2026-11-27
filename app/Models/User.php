@@ -44,6 +44,7 @@ class User extends Authenticatable
     public $passw;
     public $mail;
 
+    public const ROLE_ADMIN = 'ROLE_ADMIN';
     public const ROLE_DOC = 'ROLE_DOCTOR';
 
     /**
