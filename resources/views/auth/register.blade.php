@@ -34,7 +34,8 @@
                 <div class="form-group row">
                     <div class="col-md-12">
                         <input id="login" class="form-control @error('login') is-invalid @enderror"
-                               name="login" placeholder="{{ __('Логин') }}" value="{{ $login ??old('login') }}">
+                               name="login" placeholder="{{ __('Логин') }}"
+                               value="{{ old('login', $login ?? '') }}" readonly>
                         @error('login')
                         <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -45,7 +46,7 @@
 
                 <div class="form-group row">
                     <div class="col-md-12">
-                        <input id="password" type="password" placeholder="{{ __('Password') }}"
+                        <input id="password" type="password" placeholder="{{ __('Пароль') }}"
                                class="form-control @error('password') is-invalid @enderror" name="password" required
                                autocomplete="new-password">
                         @error('password')
@@ -58,7 +59,7 @@
 
                 <div class="form-group row">
                     <div class="col-md-12">
-                        <input id="password-confirm" type="password" placeholder="{{ __('Confirm Password') }}"
+                        <input id="password-confirm" type="password" placeholder="{{ __('Подтверждение пароля') }}"
                                class="form-control" name="password_confirmation"
                                required autocomplete="new-password">
                     </div>
@@ -68,7 +69,8 @@
                 <div class="form-group row">
                     <div class="col-md-12">
                         <input id="mail" type="email" class="form-control @error('mail') is-invalid @enderror"
-                               name="mail" placeholder="{{ __('E-mail') }} (не обязательно)">
+                               name="mail" placeholder="{{ __('E-mail') }} (не обязательно)"
+                               value="{{ old('mail') }}">
                         @error('mail')
                         <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -80,7 +82,7 @@
                 <div class="form-group row mb-0">
                     <div class="col-md-6 offset-md-4">
                         <button type="submit" class="btn btn-primary">
-                            {{ __('Register') }}
+                            {{ __('Зарегистрироваться') }}
                         </button>
                     </div>
                 </div>
