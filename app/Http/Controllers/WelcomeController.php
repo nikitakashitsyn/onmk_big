@@ -39,8 +39,14 @@ class WelcomeController extends Controller
             return $redirect;
         }
 
-        $data = Auth::user()->jsonData['initial_data'] ?? [];
-        return view('welcome.form')->with(['data' => $data]);
+        $user = Auth::user();
+        $data = $user->jsonData['initial_data'] ?? [];
+        $caregiver = $user->getCaregiver();
+
+        return view('welcome.form')->with([
+            'data' => $data,
+            'caregiver' => $caregiver,
+        ]);
     }
 
     public function store_first(Request $request)
@@ -49,8 +55,16 @@ class WelcomeController extends Controller
             return $redirect;
         }
 
+        $validated = $request->validate(
+            User::caregiverValidationRules(),
+            User::caregiverValidationMessages()
+        );
+
         if ($user = Auth::user()) {
-            $user->jsonData = array_merge($user->jsonData ?? [], ['initial_data' => $request->post('profile')]);
+            $jsonData = is_array($user->jsonData) ? $user->jsonData : [];
+            $jsonData['initial_data'] = $request->post('profile', []);
+            $user->jsonData = $jsonData;
+            $user->setCaregiver($validated['caregiver'] ?? []);
             $user->save();
             return redirect()->route('welcome.second');
         }

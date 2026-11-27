@@ -7,6 +7,16 @@
 
 
 @section("content")
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form method="post" action="{{route('welcome.store_first')}}">
         <div class="card">
             <div class="card-body">
@@ -149,6 +159,95 @@
                 </div>
             </div>
         </div>
+
+        @php
+            $caregiverData = $caregiver ?? (Auth::user() ? Auth::user()->getCaregiver() : []);
+        @endphp
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Данные ухаживающего лица (необязательно)</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    Заполните при необходимости, если пациент занимается с помощью родственника или специалиста по уходу.
+                </p>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="caregiver_name">ФИО ухаживающего лица</label>
+                            <input type="text"
+                                   id="caregiver_name"
+                                   name="caregiver[name]"
+                                   maxlength="255"
+                                   class="form-control @error('caregiver.name') is-invalid @enderror"
+                                   value="{{ old('caregiver.name', $caregiverData['name'] ?? '') }}"
+                                   placeholder="Например: Иванова Анна Сергеевна">
+                            @error('caregiver.name')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="caregiver_relation">Степень родства</label>
+                            <input type="text"
+                                   id="caregiver_relation"
+                                   name="caregiver[relation]"
+                                   maxlength="100"
+                                   class="form-control @error('caregiver.relation') is-invalid @enderror"
+                                   value="{{ old('caregiver.relation', $caregiverData['relation'] ?? '') }}"
+                                   placeholder="Например: Супруг(а), Дочь, Сын, Сиделка">
+                            @error('caregiver.relation')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group mb-md-0">
+                            <label for="caregiver_phone">Телефон</label>
+                            <input type="tel"
+                                   id="caregiver_phone"
+                                   name="caregiver[phone]"
+                                   maxlength="50"
+                                   class="form-control @error('caregiver.phone') is-invalid @enderror"
+                                   value="{{ old('caregiver.phone', $caregiverData['phone'] ?? '') }}"
+                                   placeholder="Например: +7 (999) 123-45-67">
+                            @error('caregiver.phone')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group mb-0">
+                            <label for="caregiver_email">Email</label>
+                            <input type="email"
+                                   id="caregiver_email"
+                                   name="caregiver[email]"
+                                   maxlength="255"
+                                   class="form-control @error('caregiver.email') is-invalid @enderror"
+                                   value="{{ old('caregiver.email', $caregiverData['email'] ?? '') }}"
+                                   placeholder="Например: caregiver@example.com">
+                            @error('caregiver.email')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <p class="pb-3">
             <button type="submit" class="btn btn-primary">Сохранить</button>
         </p>

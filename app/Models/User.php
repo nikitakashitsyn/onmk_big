@@ -48,6 +48,8 @@ class User extends Authenticatable
     public const ROLE_DOC = 'ROLE_DOCTOR';
     public const ROLE_USER = 'ROLE_USER';
 
+    public const CAREGIVER_KEYS = ['name', 'relation', 'phone', 'email'];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -145,5 +147,80 @@ class User extends Authenticatable
     public function exams()
     {
         return $this->hasMany(Exam::class, 'user_id', 'id');
+    }
+
+    public static function caregiverValidationRules(): array
+    {
+        return [
+            'caregiver' => ['nullable', 'array'],
+            'caregiver.name' => ['nullable', 'string', 'max:255'],
+            'caregiver.relation' => ['nullable', 'string', 'max:100'],
+            'caregiver.phone' => ['nullable', 'string', 'max:50', 'regex:/^[0-9+\-\s()]+$/'],
+            'caregiver.email' => ['nullable', 'email:rfc', 'max:255'],
+        ];
+    }
+
+    public static function caregiverValidationMessages(): array
+    {
+        return [
+            'caregiver.name.max' => 'ФИО ухаживающего лица не должно превышать :max символов.',
+            'caregiver.relation.max' => 'Степень родства не должна превышать :max символов.',
+            'caregiver.phone.max' => 'Телефон не должен превышать :max символов.',
+            'caregiver.phone.regex' => 'Телефон может содержать только цифры, пробелы и символы +, -, (, ).',
+            'caregiver.email.email' => 'Укажите корректный email ухаживающего лица.',
+            'caregiver.email.max' => 'Email ухаживающего лица не должен превышать :max символов.',
+        ];
+    }
+
+    public function getCaregiver(): array
+    {
+        $raw = is_array($this->jsonData['caregiver'] ?? null)
+            ? $this->jsonData['caregiver']
+            : [];
+
+        $caregiver = [];
+        foreach (self::CAREGIVER_KEYS as $key) {
+            $caregiver[$key] = self::normalizeCaregiverValue($raw[$key] ?? null);
+        }
+
+        return $caregiver;
+    }
+
+    public function hasCaregiver(): bool
+    {
+        foreach ($this->getCaregiver() as $value) {
+            if ($value !== null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function setCaregiver(array $data): void
+    {
+        $jsonData = is_array($this->jsonData) ? $this->jsonData : [];
+
+        $normalized = [];
+        foreach (self::CAREGIVER_KEYS as $key) {
+            $value = self::normalizeCaregiverValue($data[$key] ?? null);
+            if ($key === 'email' && $value !== null) {
+                $value = mb_strtolower($value);
+            }
+            $normalized[$key] = $value;
+        }
+
+        $jsonData['caregiver'] = $normalized;
+        $this->jsonData = $jsonData;
+    }
+
+    private static function normalizeCaregiverValue($value): ?string
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+        return $trimmed === '' ? null : $trimmed;
     }
 }

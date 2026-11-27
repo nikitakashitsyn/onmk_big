@@ -78,6 +78,49 @@
                     @endif
                 </div>
             </div>
+
+            @php $caregiver = $user->getCaregiver(); @endphp
+            <div class="card card-info card-outline">
+                <div class="card-header">
+                    <h3 class="card-title">Ухаживающее лицо / контактное лицо</h3>
+                </div>
+                <div class="card-body">
+                    @if($user->hasCaregiver())
+                        <ul class="list-group list-group-unbordered mb-0">
+                            <li class="list-group-item">
+                                <b>ФИО</b>
+                                <span class="float-right">{{ $caregiver['name'] ?? '—' }}</span>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Степень родства</b>
+                                <span class="float-right">{{ $caregiver['relation'] ?? '—' }}</span>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Телефон</b>
+                                <span class="float-right">
+                                    @if(!empty($caregiver['phone']))
+                                        <a href="tel:{{ preg_replace('/[^\d+]/', '', $caregiver['phone']) }}">{{ $caregiver['phone'] }}</a>
+                                    @else
+                                        —
+                                    @endif
+                                </span>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Email</b>
+                                <span class="float-right">
+                                    @if(!empty($caregiver['email']))
+                                        <a href="mailto:{{ $caregiver['email'] }}">{{ $caregiver['email'] }}</a>
+                                    @else
+                                        —
+                                    @endif
+                                </span>
+                            </li>
+                        </ul>
+                    @else
+                        <p class="text-muted mb-0">Не указано</p>
+                    @endif
+                </div>
+            </div>
         </div>
 
         {{-- Когнитивные сферы + история экзаменов --}}
