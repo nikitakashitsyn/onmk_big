@@ -23,7 +23,12 @@
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
         <div class="container">
-            <a href="/" class="navbar-brand">
+            @php
+                $brandUrl = (Auth::check() && Auth::user()->hasRole(\App\Models\User::ROLE_DOC, \App\Models\User::ROLE_ADMIN))
+                    ? route('patients_list')
+                    : route('home');
+            @endphp
+            <a href="{{ $brandUrl }}" class="navbar-brand">
                 <span class="brand-text font-weight-light">Реабилитация после ОНМК</span>
             </a>
 
@@ -47,7 +52,11 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <ul class="navbar-nav ml-auto ">
                         <li class="nav-item">
-                            <a href="/" class="nav-link">{{Auth::getUser()->name}}</a>
+                            @if(Auth::user()->hasRole(\App\Models\User::ROLE_DOC))
+                                <span class="nav-link" style="cursor: default;">{{Auth::getUser()->name}}</span>
+                            @else
+                                <a href="{{ Auth::user()->hasRole(\App\Models\User::ROLE_ADMIN) ? route('admin') : route('home') }}" class="nav-link">{{Auth::getUser()->name}}</a>
+                            @endif
                         </li>
 
                         @roles(['ROLE_USER'])
